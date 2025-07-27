@@ -30,8 +30,11 @@ jobs:
       - name: Prepare (checkouts & patches)
         run: make checkouts patches
 
-      - name: Kernel
-        run: make kernel
+      - name: Packages
+        run: make packages
+
+      - name: Extensions
+        run: make extensions
 
       - name: Overlay
         run: make overlay

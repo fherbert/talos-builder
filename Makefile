@@ -1,5 +1,6 @@
-PKG_VERSION = v1.10.0
+PKG_VERSION = v1.11.0
 TALOS_VERSION = v1.10.5
+EXTENSIONS_VERSION = v1.11.0-beta.0
 SBCOVERLAY_VERSION = main
 
 REGISTRY ?= ghcr.io
@@ -9,13 +10,14 @@ TAG ?= $(shell git describe --tags --exact-match)
 
 
 EXTENSIONS ?= ghcr.io/siderolabs/gvisor:20250505.0@sha256:d7503b59603f030b972ceb29e5e86979e6c889be1596e87642291fee48ce380c \
-              ghcr.io/siderolabs/hailort:4.21.0@sha256:3585c912029d5064b60f65fd37932edf7f5bb9f826e8368dc52b56f8cf77c25f
+              ghcr.io/$(REGISTRY_USERNAME)/hailort:4.21.0-$(PKGS_TAG)
 
 # Convert space-separated extensions to --system-extension-image parameters
 EXTENSION_ARGS = $(foreach ext,$(EXTENSIONS),--system-extension-image=$(ext))
 
 PKG_REPOSITORY = https://github.com/siderolabs/pkgs.git
 TALOS_REPOSITORY = https://github.com/siderolabs/talos.git
+EXTENSIONS_REPOSITORY = https://github.com/siderolabs/extensions.git
 SBCOVERLAY_REPOSITORY = https://github.com/talos-rpi5/sbc-raspberrypi5.git
 
 CHECKOUTS_DIRECTORY := $(PWD)/checkouts
@@ -24,6 +26,7 @@ PATCHES_DIRECTORY := $(PWD)/patches
 PKGS_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/pkgs && git describe --tag --always --dirty --match v[0-9]\*)
 TALOS_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/talos && git describe --tag --always --dirty --match v[0-9]\*)
 SBCOVERLAY_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/sbc-raspberrypi5 && git describe --tag --always --dirty)-$(PKGS_TAG)
+EXTENSIONS_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/extensions && git describe --tag --always --dirty --match v[0-9]\*)
 
 #
 # Help
@@ -48,18 +51,19 @@ checkouts:
 	git clone -c advice.detachedHead=false --branch "$(PKG_VERSION)" "$(PKG_REPOSITORY)" "$(CHECKOUTS_DIRECTORY)/pkgs"
 	git clone -c advice.detachedHead=false --branch "$(TALOS_VERSION)" "$(TALOS_REPOSITORY)" "$(CHECKOUTS_DIRECTORY)/talos"
 	git clone -c advice.detachedHead=false --branch "$(SBCOVERLAY_VERSION)" "$(SBCOVERLAY_REPOSITORY)" "$(CHECKOUTS_DIRECTORY)/sbc-raspberrypi5"
-
+	git clone -c advice.detachedHead=false --branch "$(EXTENSIONS_VERSION)" "$(EXTENSIONS_REPOSITORY)" "$(CHECKOUTS_DIRECTORY)/extensions"
 checkouts-clean:
 	rm -rf "$(CHECKOUTS_DIRECTORY)/pkgs"
 	rm -rf "$(CHECKOUTS_DIRECTORY)/talos"
 	rm -rf "$(CHECKOUTS_DIRECTORY)/sbc-raspberrypi5"
+	rm -rf "$(CHECKOUTS_DIRECTORY)/extensions"
 
 
 
 #
 # Patches
 #
-.PHONY: patches-pkgs patches-talos patches
+.PHONY: patches-pkgs patches-talos patches-extensions patches
 patches-pkgs:
 	cd "$(CHECKOUTS_DIRECTORY)/pkgs" && \
 		git am "$(PATCHES_DIRECTORY)/siderolabs/pkgs/0001-Patched-for-Raspberry-Pi-5.patch"
@@ -73,15 +77,30 @@ patches: patches-pkgs patches-talos
 
 
 #
-# Kernel
+# Packages
 #
-.PHONY: kernel
-kernel:
+.PHONY: packages
+packages:
 	cd "$(CHECKOUTS_DIRECTORY)/pkgs" && \
 		$(MAKE) \
 			REGISTRY=$(REGISTRY) USERNAME=$(REGISTRY_USERNAME) PUSH=true \
 			PLATFORM=linux/arm64 \
-			kernel
+			kernel hailort-pkg
+
+
+
+#
+# Extensions
+#
+.PHONY: extensions
+extensions:
+	cd "$(CHECKOUTS_DIRECTORY)/extensions" && \
+		sed -i -E "s/^(  HAILORT_VERSION: )4\.21\.0.*/\\14.21.0-$(PKGS_TAG)/" Pkgfile && \
+		$(MAKE) \
+			REGISTRY=$(REGISTRY) USERNAME=$(REGISTRY_USERNAME) PUSH=true \
+			PKGS_PREFIX=$(REGISTRY)/$(REGISTRY_USERNAME) PKGS=$(PKGS_TAG) \
+			PLATFORM=linux/arm64 \
+			hailort
 
 
 
