@@ -33,6 +33,9 @@ jobs:
       - name: Kernel
         run: make kernel
 
+      - name: Extensions
+        run: make extensions
+
       - name: Overlay
         run: make overlay
 
