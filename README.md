@@ -38,8 +38,8 @@ If you'd like to make modifications, it is possible to create your own build. Be
 # Clones all dependencies and applies the necessary patches
 make checkouts patches
 
-# Builds the Linux Kernel (can take a while)
-make REGISTRY=ghcr.io REGISTRY_USERNAME=<username> kernel
+# Builds the packages (kernel, hailort ...)
+make REGISTRY=ghcr.io REGISTRY_USERNAME=<username> packages
 
 # Builds the overlay (U-Boot, dtoverlays ...)
 make REGISTRY=ghcr.io REGISTRY_USERNAME=<username> overlay

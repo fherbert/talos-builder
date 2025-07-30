@@ -10,7 +10,7 @@ TAG ?= $(shell git describe --tags --exact-match)
 
 
 EXTENSIONS ?= ghcr.io/siderolabs/gvisor:20250505.0@sha256:d7503b59603f030b972ceb29e5e86979e6c889be1596e87642291fee48ce380c \
-              ghcr.io/$(REGISTRY_USERNAME)/hailort:$(EXTENSIONS_TAG)
+              ghcr.io/$(REGISTRY_USERNAME)/hailort:4.21.0-$(PKGS_TAG)
 
 # Convert space-separated extensions to --system-extension-image parameters
 EXTENSION_ARGS = $(foreach ext,$(EXTENSIONS),--system-extension-image=$(ext))
@@ -63,7 +63,7 @@ checkouts-clean:
 #
 # Patches
 #
-.PHONY: patches-pkgs patches-talos patches
+.PHONY: patches-pkgs patches-talos patches-extensions patches
 patches-pkgs:
 	cd "$(CHECKOUTS_DIRECTORY)/pkgs" && \
 		git am "$(PATCHES_DIRECTORY)/siderolabs/pkgs/0001-Patched-for-Raspberry-Pi-5.patch"
@@ -72,15 +72,19 @@ patches-talos:
 	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
 		git am "$(PATCHES_DIRECTORY)/siderolabs/talos/0001-Patched-for-Raspberry-Pi-5.patch"
 
-patches: patches-pkgs patches-talos
+patches-extensions:
+	cd "$(CHECKOUTS_DIRECTORY)/extensions" && \
+		git am "$(PATCHES_DIRECTORY)/siderolabs/extensions/0001-Patched-to-match-haliort-extension-version.patch"
+
+patches: patches-pkgs patches-talos patches-extensions
 
 
 
 #
-# Kernel
+# Packages
 #
-.PHONY: kernel
-kernel:
+.PHONY: packages
+packages:
 	cd "$(CHECKOUTS_DIRECTORY)/pkgs" && \
 		$(MAKE) \
 			REGISTRY=$(REGISTRY) USERNAME=$(REGISTRY_USERNAME) PUSH=true \
