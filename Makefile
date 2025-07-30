@@ -72,11 +72,7 @@ patches-talos:
 	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
 		git am "$(PATCHES_DIRECTORY)/siderolabs/talos/0001-Patched-for-Raspberry-Pi-5.patch"
 
-patches-extensions:
-	cd "$(CHECKOUTS_DIRECTORY)/extensions" && \
-		git am "$(PATCHES_DIRECTORY)/siderolabs/extensions/0001-Patched-to-match-haliort-extension-version.patch"
-
-patches: patches-pkgs patches-talos patches-extensions
+patches: patches-pkgs patches-talos
 
 
 
@@ -99,6 +95,7 @@ packages:
 .PHONY: extensions
 extensions:
 	cd "$(CHECKOUTS_DIRECTORY)/extensions" && \
+		sed -i -E "s/^(  HAILORT_VERSION: )4\.21\.0.*/\\14.21.0-$(PKGS_TAG)/" Pkgfile && \
 		$(MAKE) \
 			REGISTRY=$(REGISTRY) USERNAME=$(REGISTRY_USERNAME) PUSH=true \
 			PKGS_PREFIX=$(REGISTRY)/$(REGISTRY_USERNAME) PKGS=$(PKGS_TAG) \
