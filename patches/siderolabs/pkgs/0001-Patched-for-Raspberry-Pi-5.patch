@@ -1,13 +1,13 @@
-From c8bff84b9b5d33e4f3d84be23c9e66a0370bdb2b Mon Sep 17 00:00:00 2001
+From 328f6df4cae2712f2cb99d74c5ff8d9f18d4b2c4 Mon Sep 17 00:00:00 2001
 From: Francois Herbert <francois@herbert.org.nz>
-Date: Fri, 8 Aug 2025 19:50:35 +1200
+Date: Sat, 9 Aug 2025 08:11:57 +1200
 Subject: [PATCH] Patched for Raspberry Pi 5
 
 ---
- Pkgfile                   |   8 +-
- kernel/build/config-arm64 | 160 +++++++++++++++++++++++++++++++++-----
+ Pkgfile                   |   8 +--
+ kernel/build/config-arm64 | 118 ++++++++++++++++++++++++++++++++++----
  kernel/prepare/pkg.yaml   |   6 +-
- 3 files changed, 146 insertions(+), 28 deletions(-)
+ 3 files changed, 114 insertions(+), 18 deletions(-)
 
 diff --git a/Pkgfile b/Pkgfile
 index 88e6f64..9552ae3 100644
@@ -29,7 +29,7 @@ index 88e6f64..9552ae3 100644
    # renovate: datasource=git-tags extractVersion=^libaio-(?<version>.*)$ depName=https://pagure.io/libaio.git
    libaio_version: 0.3.113
 diff --git a/kernel/build/config-arm64 b/kernel/build/config-arm64
-index 8776563..1549514 100644
+index 8776563..7c239f3 100644
 --- a/kernel/build/config-arm64
 +++ b/kernel/build/config-arm64
 @@ -1,6 +1,6 @@
@@ -85,15 +85,6 @@ index 8776563..1549514 100644
  # CONFIG_PARPORT is not set
  CONFIG_PNP=y
  CONFIG_PNP_DEBUG_MESSAGES=y
-@@ -2409,7 +2411,7 @@ CONFIG_BLK_DEV_RBD=y
- #
- CONFIG_NVME_AUTH=m
- CONFIG_NVME_CORE=y
--CONFIG_BLK_DEV_NVME=m
-+CONFIG_BLK_DEV_NVME=y
- CONFIG_NVME_MULTIPATH=y
- # CONFIG_NVME_VERBOSE_ERRORS is not set
- CONFIG_NVME_HWMON=y
 @@ -2434,6 +2436,7 @@ CONFIG_NVME_TARGET_AUTH=y
  #
  # Misc devices
@@ -111,15 +102,6 @@ index 8776563..1549514 100644
  
  #
  # EEPROM support
-@@ -2992,7 +2997,7 @@ CONFIG_NET_VENDOR_INTEL=y
- CONFIG_LIBETH=m
- CONFIG_LIBIE=m
- CONFIG_E100=m
--CONFIG_E1000=m
-+CONFIG_E1000=y
- CONFIG_E1000E=m
- CONFIG_IGB=m
- CONFIG_IGB_HWMON=y
 @@ -3657,6 +3662,8 @@ CONFIG_HYPERV_KEYBOARD=y
  #
  # Character devices
@@ -470,29 +452,6 @@ index 8776563..1549514 100644
  # CONFIG_XGENE_DMA is not set
  # CONFIG_XILINX_DMA is not set
  # CONFIG_XILINX_XDMA is not set
-@@ -7148,16 +7236,16 @@ CONFIG_VMGENID=y
- # CONFIG_ARM_PKVM_GUEST is not set
- CONFIG_VIRTIO_ANCHOR=y
- CONFIG_VIRTIO=y
--CONFIG_VIRTIO_PCI_LIB=m
--CONFIG_VIRTIO_PCI_LIB_LEGACY=m
-+CONFIG_VIRTIO_PCI_LIB=y
-+CONFIG_VIRTIO_PCI_LIB_LEGACY=y
- CONFIG_VIRTIO_MENU=y
--CONFIG_VIRTIO_PCI=m
-+CONFIG_VIRTIO_PCI=y
- CONFIG_VIRTIO_PCI_LEGACY=y
- CONFIG_VIRTIO_PMEM=y
--CONFIG_VIRTIO_BALLOON=m
-+CONFIG_VIRTIO_BALLOON=y
- # CONFIG_VIRTIO_MEM is not set
--CONFIG_VIRTIO_INPUT=m
--CONFIG_VIRTIO_MMIO=m
-+CONFIG_VIRTIO_INPUT=y
-+CONFIG_VIRTIO_MMIO=y
- CONFIG_VIRTIO_MMIO_CMDLINE_DEVICES=y
- CONFIG_VIRTIO_DMA_SHARED_BUFFER=y
- # CONFIG_VIRTIO_DEBUG is not set
 @@ -7232,6 +7320,8 @@ CONFIG_COMMON_CLK=y
  # CONFIG_COMMON_CLK_MAX77686 is not set
  # CONFIG_COMMON_CLK_MAX9485 is not set
@@ -559,40 +518,7 @@ index 8776563..1549514 100644
  CONFIG_NVMEM_BCM_OCOTP=y
  # CONFIG_NVMEM_IMX_IIM is not set
  # CONFIG_NVMEM_IMX_OCOTP is not set
-@@ -9244,8 +9341,30 @@ CONFIG_INTEGRITY_TRUSTED_KEYRING=y
- CONFIG_INTEGRITY_PLATFORM_KEYRING=y
- CONFIG_LOAD_UEFI_KEYS=y
- CONFIG_INTEGRITY_AUDIT=y
--# CONFIG_IMA is not set
--# CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT is not set
-+CONFIG_IMA=y
-+# CONFIG_IMA_KEXEC is not set
-+CONFIG_IMA_MEASURE_PCR_IDX=10
-+CONFIG_IMA_LSM_RULES=y
-+CONFIG_IMA_NG_TEMPLATE=y
-+# CONFIG_IMA_SIG_TEMPLATE is not set
-+CONFIG_IMA_DEFAULT_TEMPLATE="ima-ng"
-+# CONFIG_IMA_DEFAULT_HASH_SHA1 is not set
-+# CONFIG_IMA_DEFAULT_HASH_SHA256 is not set
-+CONFIG_IMA_DEFAULT_HASH_SHA512=y
-+CONFIG_IMA_DEFAULT_HASH="sha512"
-+CONFIG_IMA_WRITE_POLICY=y
-+CONFIG_IMA_READ_POLICY=y
-+CONFIG_IMA_APPRAISE=y
-+CONFIG_IMA_ARCH_POLICY=y
-+# CONFIG_IMA_APPRAISE_BUILD_POLICY is not set
-+CONFIG_IMA_APPRAISE_BOOTPARAM=y
-+# CONFIG_IMA_APPRAISE_MODSIG is not set
-+# CONFIG_IMA_BLACKLIST_KEYRING is not set
-+# CONFIG_IMA_LOAD_X509 is not set
-+CONFIG_IMA_MEASURE_ASYMMETRIC_KEYS=y
-+CONFIG_IMA_QUEUE_EARLY_BOOT_KEYS=y
-+CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT=y
-+# CONFIG_IMA_DISABLE_HTABLE is not set
- # CONFIG_EVM is not set
- # CONFIG_DEFAULT_SECURITY_SELINUX is not set
- # CONFIG_DEFAULT_SECURITY_APPARMOR is not set
-@@ -9702,7 +9821,6 @@ CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU=y
+@@ -9702,7 +9799,6 @@ CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU=y
  CONFIG_ARCH_HAS_DMA_PREP_COHERENT=y
  CONFIG_SWIOTLB=y
  # CONFIG_SWIOTLB_DYNAMIC is not set
@@ -601,7 +527,7 @@ index 8776563..1549514 100644
  # CONFIG_DMA_RESTRICTED_POOL is not set
  CONFIG_DMA_NONCOHERENT_MMAP=y
 diff --git a/kernel/prepare/pkg.yaml b/kernel/prepare/pkg.yaml
-index 6408110..a108b71 100644
+index 6408110..b507e5d 100644
 --- a/kernel/prepare/pkg.yaml
 +++ b/kernel/prepare/pkg.yaml
 @@ -5,8 +5,8 @@ dependencies:
